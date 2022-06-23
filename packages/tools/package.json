@@ -11,7 +11,7 @@
   "author": "Hugo Dias <hugomrdias@gmail.com> (hugodias.me)",
   "license": "MIT",
   "dependencies": {
-    "got": "^11.8.2",
+    "got": "^11.8.5",
     "sade": "^1.7.4"
   },
   "devDependencies": {
