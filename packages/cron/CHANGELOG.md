@@ -1,5 +1,44 @@
 # Changelog
 
+## [3.6.0](https://github.com/mikeyhodl/nft.storage/compare/cron-v3.5.0...cron-v3.6.0) (2022-10-06)
+
+
+### Features
+
+* add cargo metric statements and dummy data inserts for testing … ([#1835](https://github.com/mikeyhodl/nft.storage/issues/1835)) ([72480d6](https://github.com/mikeyhodl/nft.storage/commit/72480d6a9719308bf4a8a81c34764a51f5f58cfa))
+* add done log line ([15436a6](https://github.com/mikeyhodl/nft.storage/commit/15436a6f9f740785d3462964c1b8ff449ccbb7f5))
+* add stats routes ([#1400](https://github.com/mikeyhodl/nft.storage/issues/1400)) ([96acd59](https://github.com/mikeyhodl/nft.storage/commit/96acd592b8e0cc36f2adaf542ef4921cfa8bea22))
+* create cron nft-ttr to measure nft time to retrievability ([#1945](https://github.com/mikeyhodl/nft.storage/issues/1945)) ([b8274f4](https://github.com/mikeyhodl/nft.storage/commit/b8274f467f5e85d569c2635e179e255c29c8b1af))
+* cron update for cluster@1.0 ([#1807](https://github.com/mikeyhodl/nft.storage/issues/1807)) ([16e5333](https://github.com/mikeyhodl/nft.storage/commit/16e5333346d22c7c2d212ca0a80ff712fbc6ba2b))
+* **cron:** nft-ttr logs store_duration_seconds to prometheus ([#2040](https://github.com/mikeyhodl/nft.storage/issues/2040)) ([d2889f4](https://github.com/mikeyhodl/nft.storage/commit/d2889f4a69de52482ce2c165c940171d74810fa6))
+* **cron:** send instance=github_action label with retrieval_duration_seconds metric ([#2020](https://github.com/mikeyhodl/nft.storage/issues/2020)) ([5e95d27](https://github.com/mikeyhodl/nft.storage/commit/5e95d27c94f7253dac00db0591992b5502cdacc2))
+* followup fixes for [#1945](https://github.com/mikeyhodl/nft.storage/issues/1945) after testing nft-ttr cron  ([#2000](https://github.com/mikeyhodl/nft.storage/issues/2000)) ([0765548](https://github.com/mikeyhodl/nft.storage/commit/0765548a4f46ebd2ccd1f5358e68686e766af1d8))
+* grace period for new pins found in error state ([#1577](https://github.com/mikeyhodl/nft.storage/issues/1577)) ([36050b3](https://github.com/mikeyhodl/nft.storage/commit/36050b3a8b52ad71348cca346a7dd3933b6f168f))
+* use Cluster statusAll method ([#1265](https://github.com/mikeyhodl/nft.storage/issues/1265)) ([c628259](https://github.com/mikeyhodl/nft.storage/commit/c628259179db7890335c476fffeff636b9fd0c26))
+
+
+### Bug Fixes
+
+* allow pool to exit when idle ([aeb3843](https://github.com/mikeyhodl/nft.storage/commit/aeb38439bc98f90877763d51e03ffe0247f236f3))
+* column reference inserted_at is ambiguous ([3003926](https://github.com/mikeyhodl/nft.storage/commit/3003926c399be163fd09b3e4788699ac8f850f61))
+* metrics cron ([#1486](https://github.com/mikeyhodl/nft.storage/issues/1486)) ([8d27e91](https://github.com/mikeyhodl/nft.storage/commit/8d27e919b734194cdd459c4714fe96eec748a119))
+* pins cron ([#1811](https://github.com/mikeyhodl/nft.storage/issues/1811)) ([f112573](https://github.com/mikeyhodl/nft.storage/commit/f1125738ba8e9c70a4a4da2cd8d3cbb48cb5b4c2))
+* pool does not need connect ([1db831e](https://github.com/mikeyhodl/nft.storage/commit/1db831e0548c5996569a8dfc9884a6feabdf52c5))
+* revert using pool ([13e78f0](https://github.com/mikeyhodl/nft.storage/commit/13e78f0ee2ac9deff979da696ff3a481695eee22))
+* update ipfs car and client ([#1373](https://github.com/mikeyhodl/nft.storage/issues/1373)) ([2b61549](https://github.com/mikeyhodl/nft.storage/commit/2b61549f4f31684a6afca28c9f7ed39dc076ada2))
+* use pool ([8b8e817](https://github.com/mikeyhodl/nft.storage/commit/8b8e817379245b8cf2cfab135124d4636efbc6de))
+* use source_cid in pin cron job ([#1757](https://github.com/mikeyhodl/nft.storage/issues/1757)) ([c49727c](https://github.com/mikeyhodl/nft.storage/commit/c49727c6159c37843f8b61957a6c97b2f1123637))
+
+
+### Other Changes
+
+* **main:** release cron 3.1.0 ([#1968](https://github.com/mikeyhodl/nft.storage/issues/1968)) ([de180a6](https://github.com/mikeyhodl/nft.storage/commit/de180a6f4b57293d6cbb2c744923a7a344108c5c))
+* **main:** release cron 3.2.0 ([#1992](https://github.com/mikeyhodl/nft.storage/issues/1992)) ([530d742](https://github.com/mikeyhodl/nft.storage/commit/530d74203ab9793f24b620b55ccead426d637075))
+* **main:** release cron 3.3.0 ([#2019](https://github.com/mikeyhodl/nft.storage/issues/2019)) ([ad1d3c6](https://github.com/mikeyhodl/nft.storage/commit/ad1d3c6b9669ef3a14f5fc569449921ba7d6956f))
+* **main:** release cron 3.4.0 ([#2028](https://github.com/mikeyhodl/nft.storage/issues/2028)) ([1cd0421](https://github.com/mikeyhodl/nft.storage/commit/1cd0421c8b3ae1226fbd6fa1f6ab2afd8b6341aa))
+* **main:** release cron 3.5.0 ([#2047](https://github.com/mikeyhodl/nft.storage/issues/2047)) ([7750c0b](https://github.com/mikeyhodl/nft.storage/commit/7750c0b0a23d2bdd970ebb51ca1c71a5287621bd))
+* remove unused cloudflare.js & types.d.ts from cron package ([#1665](https://github.com/mikeyhodl/nft.storage/issues/1665)) ([02effc4](https://github.com/mikeyhodl/nft.storage/commit/02effc4781b93dcc5eaf6566a9a35da7b70cc4da))
+
 ## [3.5.0](https://github.com/nftstorage/nft.storage/compare/cron-v3.4.0...cron-v3.5.0) (2022-07-01)
 
 
