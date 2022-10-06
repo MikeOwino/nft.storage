@@ -1,5 +1,53 @@
 # Changelog
 
+## [8.0.0](https://github.com/mikeyhodl/nft.storage/compare/nft.storage-v7.0.0...nft.storage-v8.0.0) (2022-10-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* rate-limit ucan auth requests (#2097)
+
+### Features
+
+* abortable requests ([#2027](https://github.com/mikeyhodl/nft.storage/issues/2027)) ([44e6a06](https://github.com/mikeyhodl/nft.storage/commit/44e6a0649be7719570c2bdbc3634853395d9376e))
+* add rate limiter ([#1647](https://github.com/mikeyhodl/nft.storage/issues/1647)) ([7726c64](https://github.com/mikeyhodl/nft.storage/commit/7726c646b84624ede58dd8cac7913fc8d4431f16))
+* add stats page ([#1376](https://github.com/mikeyhodl/nft.storage/issues/1376)) ([db62471](https://github.com/mikeyhodl/nft.storage/commit/db624711f10b672a3422e149092f4df0a5495d91))
+* New docs internal integration ([#1044](https://github.com/mikeyhodl/nft.storage/issues/1044)) ([2d8c67a](https://github.com/mikeyhodl/nft.storage/commit/2d8c67a8fe99c112001867d2cac6b14ca9f02e89))
+* rate-limit ucan auth requests ([#2097](https://github.com/mikeyhodl/nft.storage/issues/2097)) ([1e43a31](https://github.com/mikeyhodl/nft.storage/commit/1e43a31d7a0d9ba96dda50bc492aca7352d42a17))
+* storeDirectory accepts files as AsyncIterable<File> ([#1920](https://github.com/mikeyhodl/nft.storage/issues/1920)) ([27394f6](https://github.com/mikeyhodl/nft.storage/commit/27394f6435ebfbead8cad609b2e92be4b69b4661))
+* storeDirectory accepts iter of file objects ([#1924](https://github.com/mikeyhodl/nft.storage/issues/1924)) ([377b045](https://github.com/mikeyhodl/nft.storage/commit/377b045995460ac24faac0b5b21eff7e213a6274))
+
+
+### Bug Fixes
+
+* add missing dep it-pipe ([#2076](https://github.com/mikeyhodl/nft.storage/issues/2076)) ([8df636c](https://github.com/mikeyhodl/nft.storage/commit/8df636c50400d1c97f5d4e57b816f4c8e7df00dc))
+* add pre-bundled esm build to package exports ([#1234](https://github.com/mikeyhodl/nft.storage/issues/1234)) ([05c5b96](https://github.com/mikeyhodl/nft.storage/commit/05c5b96eac977a4d078ae0164f01cb9376dd899c))
+* create stream when needed ([#1693](https://github.com/mikeyhodl/nft.storage/issues/1693)) ([6dd3368](https://github.com/mikeyhodl/nft.storage/commit/6dd33685e236f7dbd1343c338d6e29ba6efd9d4e))
+* file import in some ts configurations ([#1915](https://github.com/mikeyhodl/nft.storage/issues/1915)) ([878a113](https://github.com/mikeyhodl/nft.storage/commit/878a113403d2be1331bda8077407ba5edaca16ba))
+* gateway url in client ([#1425](https://github.com/mikeyhodl/nft.storage/issues/1425)) ([785a1db](https://github.com/mikeyhodl/nft.storage/commit/785a1db360dfc7947b4e3e1289fb9de3b2ac3c58))
+* link to main branch from generated client docs ([#1430](https://github.com/mikeyhodl/nft.storage/issues/1430)) ([b0a1f8e](https://github.com/mikeyhodl/nft.storage/commit/b0a1f8e8f0a9f551e933dee1dc3c67a61aa8444a))
+* link to NFTStorage constructor in API reference docs ([#2005](https://github.com/mikeyhodl/nft.storage/issues/2005)) ([4eddd01](https://github.com/mikeyhodl/nft.storage/commit/4eddd01a78e4948d4b1e39ba88f4dee05140f512))
+* rate limit error message ([#1154](https://github.com/mikeyhodl/nft.storage/issues/1154)) ([f449126](https://github.com/mikeyhodl/nft.storage/commit/f4491267b4f596a4871a52f9582d063dd4dc4ec7))
+* typos in JS client lib docs ([#1298](https://github.com/mikeyhodl/nft.storage/issues/1298)) ([5f9568c](https://github.com/mikeyhodl/nft.storage/commit/5f9568c7164138ba737662721bb4bd9abbfa06ec))
+* update ipfs car and client ([#1373](https://github.com/mikeyhodl/nft.storage/issues/1373)) ([2b61549](https://github.com/mikeyhodl/nft.storage/commit/2b61549f4f31684a6afca28c9f7ed39dc076ada2))
+
+
+### Other Changes
+
+* **client:** update ipfs-car and related deps ([#1293](https://github.com/mikeyhodl/nft.storage/issues/1293)) ([b26b837](https://github.com/mikeyhodl/nft.storage/commit/b26b83731e7537ae0d844cb71c776319994713d7))
+* **docs:** move client examples to /examples dir ([#1712](https://github.com/mikeyhodl/nft.storage/issues/1712)) ([041d431](https://github.com/mikeyhodl/nft.storage/commit/041d43187c50c9a1a69693cf1d6a0ac1b000a936))
+* **main:** release client 5.2.4 ([#1235](https://github.com/mikeyhodl/nft.storage/issues/1235)) ([44ac56a](https://github.com/mikeyhodl/nft.storage/commit/44ac56a221f5466a7c7298a9829a7e9f2148bef3))
+* **main:** release nft.storage 6.0.0 ([#1305](https://github.com/mikeyhodl/nft.storage/issues/1305)) ([2b2bace](https://github.com/mikeyhodl/nft.storage/commit/2b2bace64b056e73261c7bfec4046de1d63a3d83))
+* **main:** release nft.storage 6.0.1 ([#1426](https://github.com/mikeyhodl/nft.storage/issues/1426)) ([b7e279f](https://github.com/mikeyhodl/nft.storage/commit/b7e279f7027061d36ad0bcc5f49691eba59a6858))
+* **main:** release nft.storage 6.0.2 ([#1564](https://github.com/mikeyhodl/nft.storage/issues/1564)) ([e74162a](https://github.com/mikeyhodl/nft.storage/commit/e74162a9df767e8e416c2fd6179388279038833b))
+* **main:** release nft.storage 6.1.0 ([#1596](https://github.com/mikeyhodl/nft.storage/issues/1596)) ([9323e05](https://github.com/mikeyhodl/nft.storage/commit/9323e05061cfe8c11db3cc818b720eaffee385d2))
+* **main:** release nft.storage 6.2.0 ([#1788](https://github.com/mikeyhodl/nft.storage/issues/1788)) ([766a3ff](https://github.com/mikeyhodl/nft.storage/commit/766a3ff81b304224353a8e6c4e64340a50783850))
+* **main:** release nft.storage 6.3.0 ([#1923](https://github.com/mikeyhodl/nft.storage/issues/1923)) ([e20b2f5](https://github.com/mikeyhodl/nft.storage/commit/e20b2f55e83c282469fe34fa9efccd9e32d67925))
+* **main:** release nft.storage 6.4.0 ([#2034](https://github.com/mikeyhodl/nft.storage/issues/2034)) ([ad1d106](https://github.com/mikeyhodl/nft.storage/commit/ad1d10655d8def15ddff0b9bafc20993d3fe54d4))
+* **main:** release nft.storage 6.4.1 ([#2039](https://github.com/mikeyhodl/nft.storage/issues/2039)) ([84032e6](https://github.com/mikeyhodl/nft.storage/commit/84032e69315d911117acf05fc879a7b0ebd6b2a1))
+* **main:** release nft.storage 7.0.0 ([#2098](https://github.com/mikeyhodl/nft.storage/issues/2098)) ([0725383](https://github.com/mikeyhodl/nft.storage/commit/0725383608026f7f0e7aad57be17b3600e7bed77))
+* update typedoc dep ([#1781](https://github.com/mikeyhodl/nft.storage/issues/1781)) ([01c4c83](https://github.com/mikeyhodl/nft.storage/commit/01c4c83c1e32fcc6fed14d231f1058833540be3d))
+
 ## [7.0.0](https://github.com/nftstorage/nft.storage/compare/nft.storage-v6.4.1...nft.storage-v7.0.0) (2022-07-29)
 
 
