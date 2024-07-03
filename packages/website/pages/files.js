@@ -1,7 +1,7 @@
-import { API, getNfts, getToken } from '../lib/api.js'
+import { API, getNft, getNfts, getToken } from '../lib/api.js'
 import { useQuery, useQueryClient } from 'react-query'
 import { CID } from 'multiformats/cid'
-import { VscQuestion } from 'react-icons/vsc'
+import { VscLoading, VscQuestion } from 'react-icons/vsc'
 import Button from '../components/button.js'
 import Tooltip from '../components/tooltip.js'
 import Loading from '../components/loading'
@@ -110,7 +110,19 @@ export default function Files({ user }) {
    */
   const TableItem = ({ nft }) => {
     const [showAllDeals, setShowAllDeals] = useState(false)
-    const deals = nft.deals
+    const [loadW3upDeals, setLoadW3upDeals] = useState(false)
+    const { status: w3upDealsStatus, data: w3upDeals } = useQuery(
+      ['w3updeals', nft.cid],
+      async () => {
+        const fetchedNft = await getNft(nft)
+        return fetchedNft.deals
+      },
+      {
+        enabled: loadW3upDeals,
+        refetchOnWindowFocus: false,
+      }
+    )
+    const deals = [...nft.deals, ...(w3upDeals || [])]
       .filter((/** @type {any} */ d) => d.status !== 'queued')
       .map(
         (
@@ -165,30 +177,65 @@ export default function Files({ user }) {
 
     const dealsHidden = deals.splice(3)
 
-    if (!nft.deals.length) {
-      deals.push(
-        <span
-          className="queuing flex items-center"
-          key="queuing"
-          aria-describedby="all-deals-queued-tooltip"
-        >
-          Queuing
-          <Tooltip
-            overlay={
-              <span>
-                The content from this upload is being aggregated for redundant
-                storage on Filecoin. Filecoin deals will be active within 48
-                hours of upload. While Queuing, data is still available on the
-                IPFS network.
-              </span>
-            }
-            overlayClassName="ns-tooltip"
-            id="all-deals-queued-tooltip"
+    if (!deals.length) {
+      if (w3upDealsStatus === 'success' || w3upDealsStatus === 'error') {
+        deals.push(
+          <span
+            className="queuing flex items-center"
+            key="queuing"
+            aria-describedby="all-deals-queued-tooltip"
           >
-            <VscQuestion size={16} />
-          </Tooltip>
-        </span>
-      )
+            Queuing
+            <Tooltip
+              overlay={
+                <span>
+                  The content from this upload is being aggregated for redundant
+                  storage on Filecoin. Filecoin deals will be active within 48
+                  hours of upload. While Queuing, data is still available on the
+                  IPFS network.
+                </span>
+              }
+              overlayClassName="ns-tooltip"
+              id="all-deals-queued-tooltip"
+            >
+              <VscQuestion size={16} />
+            </Tooltip>
+          </span>
+        )
+      } else {
+        deals.push(
+          <span
+            className="queuing flex items-center"
+            key="queuing"
+            aria-describedby="load-w3up-deals-tooltip"
+          >
+            {w3upDealsStatus === 'loading' ? (
+              <div className="relative">
+                <VscLoading
+                  size={25}
+                  strokeWidth={0.5}
+                  className="animate-spin"
+                />
+              </div>
+            ) : (
+              <Tooltip
+                overlay={<span>Check for Filecoin deals for this upload.</span>}
+                overlayClassName="ns-tooltip"
+                id="load-w3up-deals-tooltip"
+              >
+                <Button
+                  className="text-sm"
+                  onClick={() => {
+                    setLoadW3upDeals(true)
+                  }}
+                >
+                  Load Deals
+                </Button>
+              </Tooltip>
+            )}
+          </span>
+        )
+      }
     }
 
     return (
@@ -310,23 +357,6 @@ export default function Files({ user }) {
     )
   }
 
-  const UploadFileButton = () => (
-    <Button
-      disabled={user?.tags.HasAccountRestriction}
-      href={{
-        pathname: '/new-file',
-      }}
-      className="flex-none mb-2"
-      id="upload"
-      tracking={{
-        ui: countly.ui.FILES,
-        action: 'Upload File',
-      }}
-    >
-      + Upload
-    </Button>
-  )
-
   return (
     <>
       <Script src="//embed.typeform.com/next/embed.js" />
@@ -339,49 +369,6 @@ export default function Files({ user }) {
             <>
               <div className="flex flex-wrap items-center mb-4">
                 <h1 className="flex-auto chicagoflf my-8">Files</h1>
-                <div className="flex flex-wrap items-center mt-2">
-                  <Tooltip
-                    placement="bottom"
-                    overlay={
-                      <span>
-                        NFTUp is the easiest way for content creators to upload
-                        their metadata and assets, ready to be minted into NFTs
-                        by smart contracts and then traded on marketplaces, and
-                        browsed in galleries.
-                      </span>
-                    }
-                    overlayClassName="ns-tooltip"
-                    id="learn-more-nftup-info"
-                  >
-                    <a
-                      href="/docs/how-to/nftup"
-                      className="items-center mr-4 mb-2 btn button-reset select-none black py-2 px-3 hologram chicagoflf interactive light"
-                      id="learn-more-nftup"
-                    >
-                      <VscQuestion size={16} className="mr-2" /> Upload
-                      directories easily with NFTUp
-                    </a>
-                  </Tooltip>
-                  {user?.tags.HasAccountRestriction ? (
-                    <Tooltip
-                      id="blocked-upload-file-booltip"
-                      placement="bottom"
-                      overlayClassName="ns-tooltip"
-                      overlay={
-                        <span style={{ width: 160 }}>
-                          You are unable to upload files when your account is
-                          blocked. Please contact support@nft.storage
-                        </span>
-                      }
-                    >
-                      <span style={{ paddingLeft: 10 }}>
-                        <UploadFileButton />
-                      </span>
-                    </Tooltip>
-                  ) : (
-                    <UploadFileButton />
-                  )}
-                </div>
               </div>
               <div className="table-responsive">
                 <When condition={hasZeroNfts}>
@@ -393,7 +380,7 @@ export default function Files({ user }) {
                 </When>
                 <When condition={!hasZeroNfts}>
                   <>
-                    <table className="w-full collapse">
+                    <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-nsgray">
                           <th>Date</th>
@@ -554,15 +541,7 @@ export default function Files({ user }) {
               'flex justify-center pt-4',
               status === 'loading' && 'hidden'
             )}
-          >
-            <Button
-              data-tf-popup="OTxv3w2O"
-              className="mx-4 mb-4"
-              variant="dark"
-            >
-              {'Tell us how we are doing'}
-            </Button>
-          </div>
+          ></div>
         </div>
       </main>
     </>

@@ -111,6 +111,7 @@ export class DBClient {
     magic_link_id,
     github_id,
     did,
+    email,
     keys:auth_key_user_id_fkey(user_id,id,name,secret,deleted_at),
     tags:user_tag_user_id_fkey(user_id,id,tag,value)
     `
@@ -207,6 +208,41 @@ export class DBClient {
     }
 
     return false
+  }
+
+  /**
+   * @param {string} contentCid
+   * @param {import('./db-client-types').CreateUploadInputPin} newPin
+   * @returns
+   */
+  async updatePinStatus(contentCid, { service, status: newStatus }) {
+    const now = new Date().toISOString()
+    const query = this.client.from('pin')
+    const {
+      data: pin,
+      status,
+      error,
+    } = await query
+      .update({
+        status: newStatus,
+        updated_at: now,
+      })
+      .match({ content_cid: contentCid, service })
+      .single()
+
+    if (error) {
+      throw new DBError(error)
+    }
+
+    if (status === 406) {
+      throw new Error(`Status 406, cannot update pin ${service} ${contentCid}`)
+    }
+
+    if (!pin) {
+      throw new Error(`Cannot update pin ${service} ${contentCid} ${status}`)
+    }
+
+    return pin
   }
 
   /**
@@ -312,7 +348,7 @@ export class DBClient {
         // @ts-ignore
         'content.pin.service',
         'in',
-        '(IpfsCluster,IpfsCluster2,IpfsCluster3)'
+        '(IpfsCluster,IpfsCluster2,IpfsCluster3,ElasticIpfs)'
       )
       .single()
 
@@ -337,14 +373,14 @@ export class DBClient {
     const from = this.client.from('upload')
     const match = opts.match || 'exact'
     let query = from
-      .select(this.uploadQuery)
+      .select(this.uploadQuery, { count: 'exact' })
       .eq('user_id', userId)
       .is('deleted_at', null)
       .filter(
         // @ts-ignore
         'content.pin.service',
         'in',
-        '(IpfsCluster,IpfsCluster2,IpfsCluster3)'
+        '(IpfsCluster,IpfsCluster2,IpfsCluster3,ElasticIpfs)'
       )
       .limit(opts.limit || 10)
       .order('inserted_at', { ascending: false })
@@ -386,21 +422,24 @@ export class DBClient {
       query = query.gte('inserted_at', opts.after)
     }
 
-    const { data: uploads, error } = await query
+    const { data: uploads, count, error } = await query
     if (error) {
       throw new DBError(error)
     }
 
     const cids = uploads?.map((u) => u.content_cid)
 
-    const deals = await this.getDealsForCids(cids)
+    const deals = await this.getDealsFromDagcargoFDW(cids)
 
-    return uploads?.map((u) => {
-      return {
-        ...u,
-        deals: deals[u.content_cid] || [],
-      }
-    })
+    return {
+      count,
+      uploads: uploads?.map((u) => {
+        return {
+          ...u,
+          deals: deals[u.content_cid] || [],
+        }
+      }),
+    }
   }
 
   /**
@@ -454,8 +493,12 @@ export class DBClient {
         updated_at,
         pins:pin(status, service, inserted_at)`
       )
-      // @ts-ignore
-      .filter('pins.service', 'in', '(IpfsCluster,IpfsCluster2,IpfsCluster3)')
+      .filter(
+        // @ts-ignore
+        'pins.service',
+        'in',
+        '(IpfsCluster,IpfsCluster2,IpfsCluster3,ElasticIpfs)'
+      )
       .eq('cid', cid)
       .single()
 
@@ -475,7 +518,7 @@ export class DBClient {
    * @returns {Promise<import('./../bindings').Deal[]>}
    */
   async getDeals(cid) {
-    const deals = await this.getDealsForCids([cid])
+    const deals = await this.getDealsFromDagcargoFDW([cid])
 
     return deals[cid] ? deals[cid] : []
   }
@@ -487,7 +530,7 @@ export class DBClient {
    *
    * @param {string[]} cids
    */
-  async getDealsForCids(cids = []) {
+  async getDealsFromDagcargoFDW(cids = []) {
     try {
       const rsp = await this.client.rpc('find_deals_by_content_cids', {
         cids,

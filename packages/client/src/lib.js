@@ -28,7 +28,7 @@ import pipe from 'it-pipe'
 
 const MAX_STORE_RETRIES = 5
 const MAX_CONCURRENT_UPLOADS = 3
-const MAX_CHUNK_SIZE = 1024 * 1024 * 10 // chunk to ~10MB CARs
+const MAX_CHUNK_SIZE = 1024 * 1024 * 50 // chunk to ~50MB CARs
 const RATE_LIMIT_REQUESTS = 30
 const RATE_LIMIT_PERIOD = 10 * 1000
 
@@ -169,11 +169,14 @@ class NFTStorage {
   static async storeCar(
     { endpoint, rateLimiter = globalRateLimiter, ...token },
     car,
-    { onStoredChunk, maxRetries, decoders, signal } = {}
+    { onStoredChunk, maxRetries, maxChunkSize, decoders, signal } = {}
   ) {
     const url = new URL('upload/', endpoint)
-    const headers = NFTStorage.auth(token)
-    const targetSize = MAX_CHUNK_SIZE
+    const headers = {
+      ...NFTStorage.auth(token),
+      'Content-Type': 'application/car',
+    }
+    const targetSize = maxChunkSize || MAX_CHUNK_SIZE
     const splitter =
       car instanceof Blob
         ? await TreewalkCarSplitter.fromBlob(car, targetSize, { decoders })
@@ -187,6 +190,15 @@ class NFTStorage {
           carParts.push(part)
         }
         const carFile = new Blob(carParts, { type: 'application/car' })
+        /** @type {Blob|ArrayBuffer} */
+        let body = carFile
+        // FIXME: should not be necessary to await arrayBuffer()!
+        // Node.js 20 hangs reading the stream (it never ends) but in
+        // older node versions and the browser it is fine to pass a blob.
+        /* c8 ignore next 3 */
+        if (parseInt(globalThis.process?.versions?.node) > 18) {
+          body = await body.arrayBuffer()
+        }
         const cid = await pRetry(
           async () => {
             await rateLimiter()
@@ -196,7 +208,7 @@ class NFTStorage {
               response = await fetch(url.toString(), {
                 method: 'POST',
                 headers,
-                body: carFile,
+                body,
                 signal,
               })
             } catch (/** @type {any} */ err) {

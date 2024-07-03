@@ -32,13 +32,12 @@ DATABASE_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlh
 # Postgres Database
 DATABASE_CONNECTION=postgresql://postgres:postgres@localhost:5432/postgres
 
-# Cluster 
-CLUSTER_BASIC_AUTH_TOKEN = dGVzdDp0ZXN0
-CLUSTER_SERVICE = 
-CLUSTER_API_URL = http://127.0.0.1:9094
+# Pickup (can be mocked with ipfs-cluster for local dev) 
+PICKUP_BASIC_AUTH_TOKEN = dGVzdDp0ZXN0
+PICKUP_API_URL = http://127.0.0.1:9094
 
 # Maintenance Mode
-MAINTENANCE_MODE = rw
+MAINTENANCE_MODE = rwc
 
 # S3
 S3_ENDPOINT = http://127.0.0.1:9000
@@ -46,3 +45,6 @@ S3_REGION = us-east-1
 S3_ACCESS_KEY_ID = minioadmin
 S3_SECRET_ACCESS_KEY = minioadmin
 S3_BUCKET_NAME = dotstorage-dev-0
+
+# R2
+CARPARK_URL = https://carpark-dev.web3.storage

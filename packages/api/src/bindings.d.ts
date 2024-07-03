@@ -5,9 +5,14 @@ import { Service } from 'ucan-storage/service'
 import { Mode } from './middleware/maintenance.js'
 import { UserOutput, UserOutputKey } from './utils/db-client-types.js'
 import { DBClient } from './utils/db-client.js'
+import { LinkdexApi } from './utils/linkdex.js'
 import { Logging } from './utils/logs.js'
+import { Client as W3upClient } from '@web3-storage/w3up-client'
+import * as contentClaims from '@web3-storage/content-claims/client'
 
 export type RuntimeEnvironmentName = 'test' | 'dev' | 'staging' | 'production'
+
+export type RawEnvConfiguration = Record<string, any>
 
 export interface ServiceConfiguration {
   /** Is this a debug build? */
@@ -31,17 +36,32 @@ export interface ServiceConfiguration {
   /** Salt for API key generation */
   SALT: string
 
+  /** R2Bucket for CARv2 indexes mapping block offsets within CAR files. */
+  SATNAV: R2Bucket
+
+  /** R2Bucket mapping root data CIDs to CAR CID(s). */
+  DUDEWHERE: R2Bucket
+
+  /** R2Bucket for CAR files */
+  CARPARK: R2Bucket
+
+  /** Public URL prefix for CARPARK R2 Bucket */
+  CARPARK_URL: string
+
+  /** URL for linkdex-api */
+  LINKDEX_URL?: string
+
   /** API key for special metaplex upload account */
   METAPLEX_AUTH_TOKEN: string
 
   /** UCAN private signing key */
   PRIVATE_KEY: string
 
-  /** API url for active IPFS cluster endpoint */
-  CLUSTER_API_URL: string
+  /** API url for pickup endpoint */
+  PICKUP_URL: string
 
-  /** Auth token for IPFS culster */
-  CLUSTER_BASIC_AUTH_TOKEN: string
+  /** Auth token for pickup pinning service */
+  PICKUP_BASIC_AUTH_TOKEN: string
 
   /** Postgrest endpoint URL */
   DATABASE_URL: string
@@ -78,6 +98,21 @@ export interface ServiceConfiguration {
 
   /** Slack webhook url */
   SLACK_USER_REQUEST_WEBHOOK_URL: string
+
+  /** w3up connection URL (e.g. https://up.web3.storage) */
+  W3UP_URL?: string
+
+  /** w3up service DID (e.g. did:web:web3.storage) */
+  W3UP_DID?: string
+
+  /** base64 encoded multiformats ed25519 secretKey */
+  W3_NFTSTORAGE_PRINCIPAL?: string
+
+  /** CID (identity codec) of CAR-encoded UCAN DAG */
+  W3_NFTSTORAGE_PROOF?: string
+
+  /** did:key of the w3up space in which to store NFTs */
+  W3_NFTSTORAGE_SPACE?: string
 }
 
 export interface Ucan {
@@ -101,13 +136,26 @@ export interface AuthOptions {
   checkHasPsaAccess?: boolean
 }
 
+export interface ContentClaimsClient {
+  read: typeof contentClaims.read
+}
+
 export interface RouteContext {
   params: Record<string, string>
   db: DBClient
   log: Logging
-  uploader: Uploader
+  linkdexApi: LinkdexApi
+  s3Uploader: Uploader
+  r2Uploader: Uploader
   ucanService: Service
   auth?: Auth
+  W3UP_DID?: string
+  W3UP_URL?: string
+  W3_NFTSTORAGE_PRINCIPAL?: string
+  W3_NFTSTORAGE_PROOF?: string
+  W3_NFTSTORAGE_SPACE?: string
+  w3up?: W3upClient
+  contentClaims?: ContentClaimsClient
 }
 
 export type Handler = (
@@ -158,6 +206,11 @@ export type NFT = {
    * Date this NFT was created in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: YYYY-MM-DDTHH:MM:SSZ.
    */
   created: string
+  /**
+   * the graph from `cid` can be recreated from the blocks in these parts
+   * @see https://github.com/web3-storage/content-claims#partition-claim
+   */
+  parts: string[]
 }
 
 export type NFTResponse = NFT & {
@@ -243,6 +296,19 @@ export type RequestForm = Array<RequestFormItem>
  */
 export type DagStructure = 'Unknown' | 'Partial' | 'Complete'
 
+export type Backup = {
+  key: string
+  url: URL
+}
+
+// needs to be a type so it can be assigned to Record<string, string>
+export type BackupMetadata = {
+  structure: DagStructure
+  sourceCid: string
+  contentCid: string
+  carCid: string
+}
+
 /**
  * A client to a service that accepts CAR file uploads.
  */
@@ -251,9 +317,9 @@ export interface Uploader {
    * Uploads the CAR file to the service and returns the URL.
    */
   uploadCar(
+    carBytes: Uint8Array,
+    carCid: CID,
     userId: number,
-    sourceCid: string,
-    car: Blob,
-    structure?: DagStructure
-  ): Promise<URL>
+    metadata: BackupMetadata
+  ): Promise<Backup>
 }

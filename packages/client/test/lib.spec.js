@@ -191,7 +191,33 @@ describe('client', () => {
           uploadedChunks++
         },
       })
-      assert.ok(uploadedChunks >= 12)
+      assert.ok(uploadedChunks >= 3)
+      assert.equal(cid, expectedCid)
+    })
+
+    it('upload CAR with custom chunk size', async function () {
+      // @ts-ignore
+      this.timeout(20_000)
+
+      let uploadedChunks = 0
+
+      const client = new NFTStorage({ token, endpoint })
+
+      const targetSize = 1024 * 1024 * 20
+      const carReader = await CarReader.fromIterable(
+        await randomCar(targetSize)
+      )
+
+      const roots = await carReader.getRoots()
+      const expectedCid = roots[0]?.toString()
+
+      const cid = await client.storeCar(carReader, {
+        maxChunkSize: 1024 * 1024 * 15,
+        onStoredChunk: () => {
+          uploadedChunks++
+        },
+      })
+      assert.equal(uploadedChunks, 2)
       assert.equal(cid, expectedCid)
     })
 

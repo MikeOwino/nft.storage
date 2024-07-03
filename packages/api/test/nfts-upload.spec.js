@@ -3,8 +3,6 @@ import { CID } from 'multiformats/cid'
 import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import * as pb from '@ipld/dag-pb'
 import { CarWriter } from '@ipld/car'
-import { packToBlob } from 'ipfs-car/pack/blob'
-import { TreewalkCarSplitter } from 'carbites/treewalk'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createClientWithUser, getRawClient } from './scripts/helpers.js'
 import { createCar } from './scripts/car.js'
@@ -14,13 +12,51 @@ import {
   getMiniflareContext,
   getTestServiceConfig,
   setupMiniflareContext,
+  getMiniflareFetchMock,
 } from './scripts/test-context.js'
 import { File } from 'nft.storage/src/platform.js'
 import crypto from 'node:crypto'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 import { FormData } from 'undici'
+import { createServer } from 'node:http'
 
+import {
+  createMockW3upServer,
+  w3upMiniflareOverrides,
+} from './utils/w3up-testing.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+let mockW3upStoreAddCount = 0
+let mockW3upUploadAddCount = 0
+
+/**
+ * @type {import('./bindings.js').MockW3up}
+ */
+let mockW3up
 test.before(async (t) => {
-  await setupMiniflareContext(t)
+  mockW3up = await createMockW3upServer({
+    async onHandleStoreAdd(invocation) {
+      mockW3upStoreAddCount++
+    },
+    async onHandleUploadAdd(invocation) {
+      mockW3upUploadAddCount++
+    },
+  })
+
+  const linkdexUrl = 'http://fake.api.net'
+  await setupMiniflareContext(t, {
+    overrides: {
+      LINKDEX_URL: linkdexUrl,
+      ...(await w3upMiniflareOverrides(mockW3up)),
+    },
+  })
+})
+
+test.after(async (t) => {
+  mockW3up.server.close()
 })
 
 test.serial('should upload a single file', async (t) => {
@@ -50,6 +86,53 @@ test.serial('should upload a single file', async (t) => {
   // @ts-ignore
   t.is(data.source_cid, cid)
   t.is(data.deleted_at, null)
+})
+
+test.serial('should forward uploads to W3UP_URL', async (t) => {
+  const initialW3upStoreAddCount = mockW3upStoreAddCount
+  const initialW3upUploadAddCount = mockW3upUploadAddCount
+  const client = await createClientWithUser(t)
+  const mf = getMiniflareContext(t)
+  const file = new Blob(['hello world!'], { type: 'application/text' })
+  const res = await mf.dispatchFetch('http://miniflare.test/upload', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${client.token}` },
+    body: file,
+  })
+  const { ok, value } = await res.json()
+  t.truthy(ok, 'Server response payload has `ok` property')
+
+  const finalW3upStoreAddCount = mockW3upStoreAddCount
+  const storeAddCountDelta = finalW3upStoreAddCount - initialW3upStoreAddCount
+  t.is(
+    storeAddCountDelta,
+    1,
+    'this upload sent one valid store/add invocation to w3up'
+  )
+
+  // @todo re-enable or remove this. We may not ever need to do an upload/add, but haven't decided yet
+  // const finalW3upUploadAddCount = mockW3upUploadAddCount
+  // const uploadAddCountDelta =
+  //   finalW3upUploadAddCount - initialW3upUploadAddCount
+  // t.is(
+  //   uploadAddCountDelta,
+  //   1,
+  //   'this upload sent one valid upload/add invocation to w3up'
+  // )
+
+  // if similar request is made by user not in W3_NFTSTORAGE_ENABLE_W3UP_FOR_EMAILS allow list,
+  // that should not result in request to w3up
+  {
+    const storeAddCountBeforeClient2 = mockW3upStoreAddCount
+    const client2 = await createClientWithUser(t)
+    const response2 = await mf.dispatchFetch('http://miniflare.test/upload', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${client2.token}` },
+      body: file,
+    })
+    // should have incremented because feature switch allows w3up for all uploaders
+    t.is(mockW3upStoreAddCount, storeAddCountBeforeClient2 + 1)
+  }
 })
 
 test.serial('should upload multiple blobs', async (t) => {
@@ -171,6 +254,7 @@ test.serial('should upload a single CAR file', async (t) => {
   const client = await createClientWithUser(t)
   const config = getTestServiceConfig(t)
   const mf = getMiniflareContext(t)
+
   const { root, car } = await createCar('hello world car')
   // expected CID for the above data
   const cid = 'bafkreifeqjorwymdmh77ars6tbrtno74gntsdcvqvcycucidebiri2e7qy'
@@ -356,7 +440,7 @@ test.serial(
   }
 )
 
-test.serial('should upload to cluster 2', async (t) => {
+test.serial('should upload to elastic ipfs', async (t) => {
   const client = await createClientWithUser(t)
   const config = getTestServiceConfig(t)
   const mf = getMiniflareContext(t)
@@ -379,107 +463,12 @@ test.serial('should upload to cluster 2', async (t) => {
     .filter(
       'content.pin.service',
       'in',
-      '(IpfsCluster,IpfsCluster2,IpfsCluster3)'
+      '(IpfsCluster,IpfsCluster2,IpfsCluster3,ElasticIpfs)'
     )
     .single()
 
-  t.is(data.content.pin[0].service, 'IpfsCluster3')
+  t.is(data.content.pin[0].service, 'ElasticIpfs')
 })
-
-test.serial('should create S3 backup', async (t) => {
-  const client = await createClientWithUser(t)
-  const config = getTestServiceConfig(t)
-  const mf = getMiniflareContext(t)
-  const { root, car } = await packToBlob({
-    input: [{ path: 'test.txt', content: 'S3 backup' }],
-  })
-  const res = await mf.dispatchFetch('http://miniflare.test/upload', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${client.token}` },
-    body: car,
-  })
-
-  const { value } = await res.json()
-  t.is(root.toString(), value.cid)
-
-  const upload = await client.client.getUpload(value.cid, client.userId)
-  t.truthy(upload)
-  t.truthy(upload?.backup_urls)
-  const backup_urls = upload?.backup_urls || []
-
-  // construct the expected backup URL
-  const carBuf = await car.arrayBuffer()
-  const carHash = await getHash(new Uint8Array(carBuf))
-  const backupUrl = expectedBackupUrl(config, root, client.userId, carHash)
-
-  t.is(backup_urls[0], backupUrl)
-})
-
-test.serial(
-  'should backup chunked uploads, preserving backup_urls for each chunk',
-  async (t) => {
-    t.timeout(10_000)
-    const client = await createClientWithUser(t)
-    const config = getTestServiceConfig(t)
-    const mf = getMiniflareContext(t)
-    const chunkSize = 1024
-    const nChunks = 5
-
-    const files = []
-    for (let i = 0; i < nChunks; i++) {
-      files.push({
-        path: `/dir/file-${i}.bin`,
-        content: getRandomBytes(chunkSize),
-      })
-    }
-
-    const { root, car } = await packToBlob({
-      input: files,
-      maxChunkSize: chunkSize,
-    })
-    const splitter = await TreewalkCarSplitter.fromBlob(car, chunkSize)
-
-    const backupUrls = []
-    for await (const chunk of splitter.cars()) {
-      const carParts = []
-      for await (const part of chunk) {
-        carParts.push(part)
-      }
-      const carFile = new Blob(carParts, { type: 'application/car' })
-      const res = await mf.dispatchFetch('http://miniflare.test/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${client.token}` },
-        body: carFile,
-      })
-
-      const { value } = await res.json()
-      t.is(root.toString(), value.cid)
-      const carHash = await getHash(new Uint8Array(await carFile.arrayBuffer()))
-      backupUrls.push(expectedBackupUrl(config, root, client.userId, carHash))
-    }
-
-    const upload = await client.client.getUpload(root.toString(), client.userId)
-    t.truthy(upload)
-    t.truthy(upload?.backup_urls)
-    const backup_urls = upload?.backup_urls || []
-    t.truthy(backup_urls.length >= nChunks) // using >= to account for CAR / UnixFS overhead
-    t.is(
-      backup_urls.length,
-      backupUrls.length,
-      `expected ${backupUrls.length} backup urls, got: ${backup_urls.length}`
-    )
-
-    /** @type string[] */
-    // @ts-expect-error upload.backup_urls has type unknown[], but it's really string[]
-    const resultUrls = upload.backup_urls
-    for (const url of resultUrls) {
-      t.true(
-        backupUrls.includes(url),
-        `upload is missing expected backup url ${url}`
-      )
-    }
-  }
-)
 
 test.serial('should upload a single file using ucan', async (t) => {
   const client = await createClientWithUser(t)
@@ -630,12 +619,43 @@ test.serial('should update a single file', async (t) => {
   t.is(uploadData.name, name)
 })
 
+test.serial('should fail upload for corrupt CAR', async (t) => {
+  const client = await createClientWithUser(t)
+  const mf = getMiniflareContext(t)
+  const carBytes = await fs.promises.readFile(
+    path.join(__dirname, 'fixtures', 'corrupt.car')
+  )
+  const res = await mf.dispatchFetch('http://miniflare.test/upload', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${client.token}`,
+      'Content-Type': 'application/car',
+    },
+    body: carBytes,
+  })
+
+  t.is(res.status, 400)
+
+  const { ok, error } = await res.json()
+  t.is(ok, false)
+  t.is(error.code, 'ERROR_INVALID_CAR')
+  t.is(
+    error.message,
+    'Invalid CAR file received: failed hash verification: bafk2bzaceda5oo2f5wmcwfmqbqkxzdwzszc2bhqnj4lpygliqna7bmbkmzwh4: CID hash does not match bytes'
+  )
+})
+
 /**
  * @param {Uint8Array} data
  */
 const getHash = async (data) => {
   const hash = await sha256.digest(new Uint8Array(data))
   return uint8ArrayToString(hash.bytes, 'base32')
+}
+
+/** @param {Uint8Array} data */
+const getCarCid = async (data) => {
+  return CID.createV1(0x202, await sha256.digest(data))
 }
 
 /**
@@ -656,7 +676,73 @@ function getRandomBytes(n) {
  * @param {string} carHash
  * @returns
  */
-function expectedBackupUrl(config, root, userId, carHash) {
+function expectedS3BackupUrl(config, root, userId, carHash) {
   const { S3_ENDPOINT, S3_BUCKET_NAME } = config
   return `${S3_ENDPOINT}/${S3_BUCKET_NAME}/raw/${root}/nft-${userId}/${carHash}.car`
+}
+
+/**
+ * @param {import('../src/config.js').ServiceConfiguration} config
+ * @param {CID|string} carCid
+ */
+function expectedR2BackupUrl(config, carCid) {
+  const { CARPARK_URL } = config
+  return `${CARPARK_URL}/${carCid}/${carCid}.car`
+}
+
+/**
+ * @param {import('ava').ExecutionContext<unknown>} t
+ */
+function getLinkdexMock(t) {
+  const config = getTestServiceConfig(t)
+  const fetchMock = getMiniflareFetchMock(t)
+  // @ts-expect-error LINKDEX_URL should be set
+  return fetchMock.get(config.LINKDEX_URL)
+}
+
+/**
+ * @param {import('undici').Interceptable} mock
+ * @param {import('../src/bindings.js').DagStructure} structure
+ * @param {number} times
+ */
+function mockLinkdexResponse(mock, structure, times = 1) {
+  mock
+    .intercept({ path: /^\/\?key=/, method: 'GET' })
+    .reply(
+      200,
+      { structure: structure },
+      { headers: { 'content-type': 'application/json' } }
+    )
+    .times(times)
+}
+
+/**
+ * create a mock http server,
+ * that can act as a stand-in for up.web3.storage (aka w3up)
+ */
+async function createListeningMockW3up() {
+  let requestCount = 0
+  const server = createServer((req, res) => {
+    requestCount++
+    res.writeHead(451)
+    res.write('TODO')
+    res.end()
+  })
+  server.listen(0)
+  await new Promise((resolve, reject) => {
+    server.addListener('listening', () => resolve(undefined))
+  })
+  const serverAddress = server.address()
+  if (typeof serverAddress === 'string' || !serverAddress)
+    throw new Error('server.address() must not return a string')
+  const url = new URL(`http://localhost:${serverAddress.port}`)
+  return {
+    get requestCount() {
+      return requestCount
+    },
+    close() {
+      server.close()
+    },
+    url,
+  }
 }

@@ -12,6 +12,7 @@ import { useQueryClient } from 'react-query'
 import Logo from '../components/logo'
 import { useUser } from 'lib/user.js'
 import constants from 'lib/constants'
+import { usePlausible } from 'next-plausible'
 
 const BLOG_URL = constants.BLOG_URL
 
@@ -31,6 +32,7 @@ export default function Navbar({ bgColor = 'bg-nsorange', logo, user }) {
   const [isMenuOpen, setMenuOpen] = useState(false)
   const { query, asPath } = useRouter()
   const version = /** @type {string} */ (query.version)
+  const plausible = usePlausible()
 
   const logout = useCallback(async () => {
     await getMagic().user.logout()
@@ -41,6 +43,12 @@ export default function Navbar({ bgColor = 'bg-nsorange', logo, user }) {
   }, [queryClient, version])
 
   const trackLogout = useCallback(() => {
+    plausible(countly.events.LOGOUT_CLICK, {
+      props: {
+        ui: countly.ui.NAVBAR,
+        action: 'Logout',
+      },
+    })
     countly.trackEvent(countly.events.LOGOUT_CLICK, {
       ui: countly.ui.NAVBAR,
       action: 'Logout',
@@ -86,7 +94,6 @@ export default function Navbar({ bgColor = 'bg-nsorange', logo, user }) {
         link: {
           pathname: '/stats',
           query: version ? { version } : null,
-          activeClass: '!text-forest',
         },
         name: 'Stats',
       },
@@ -151,6 +158,12 @@ export default function Navbar({ bgColor = 'bg-nsorange', logo, user }) {
     [onLinkClick, toggleMenu]
   )
 
+  /** @type {(pathname: string | void) => boolean} */
+  const isActive = (pathname) =>
+    typeof pathname === 'string' &&
+    pathname !== '/' &&
+    asPath.startsWith(pathname)
+
   return (
     <nav className={clsx(bgColor, 'w-full z-50 navbar')} ref={containerRef}>
       <div className="flex items-center justify-between px-6 sm:px-16 py-4 mx-auto max-w-7xl">
@@ -169,11 +182,6 @@ export default function Navbar({ bgColor = 'bg-nsorange', logo, user }) {
         <div className="flex items-center">
           <div className="desktop-nav-items">
             {ITEMS.map((item, index) => {
-              const isActive =
-                item.link &&
-                item.link.pathname !== '/' &&
-                asPath.startsWith(item.link.pathname)
-
               return item.mobileOnly ? null : (
                 <div
                   className="select-none"
@@ -183,13 +191,17 @@ export default function Navbar({ bgColor = 'bg-nsorange', logo, user }) {
                   <Link
                     href={item.link || ''}
                     key={item.name}
-                    aria-current={isActive ? 'page' : undefined}
+                    aria-current={
+                      isActive(item.link?.pathname) ? 'page' : undefined
+                    }
                     target={item.target}
                     className={clsx(
                       'text-xl text-black no-underline underline-hover align-middle',
                       {
                         mr4: index === ITEMS.length - 1,
-                        [item.link?.activeClass || '!text-white']: isActive,
+                        [item.link?.activeClass || '!text-white']: isActive(
+                          item.link?.pathname
+                        ),
                       }
                     )}
                     onClick={item.tracking ? item.tracking : onLinkClick}
@@ -262,9 +274,17 @@ export default function Navbar({ bgColor = 'bg-nsorange', logo, user }) {
               >
                 <Link
                   href={item.link || ''}
+                  aria-current={
+                    isActive(item.link?.pathname) ? 'page' : undefined
+                  }
                   className={clsx(
                     'mobile-nav-link align-middle chicagoflf',
-                    logo.isDark ? 'black' : 'white'
+                    logo.isDark ? 'black' : 'white',
+                    {
+                      [item.link?.activeClass || '!text-white']: isActive(
+                        item.link?.pathname
+                      ),
+                    }
                   )}
                   target={item.target}
                   onClick={item.tracking ? item.tracking : onMobileLinkClick}

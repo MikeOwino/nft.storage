@@ -1,5 +1,195 @@
 # Changelog
 
+## [4.10.0](https://github.com/nftstorage/nft.storage/compare/api-v4.9.3...api-v4.10.0) (2024-07-02)
+
+
+### Features
+
+* **api:** add create aspect to maintainence ([#2708](https://github.com/nftstorage/nft.storage/issues/2708)) ([ec91ae7](https://github.com/nftstorage/nft.storage/commit/ec91ae7ea463a1c3c50b6feaf770a27b6640f1f5))
+
+
+### Bug Fixes
+
+* specify zone_id for production deployment ([dd6a626](https://github.com/nftstorage/nft.storage/commit/dd6a6267174db1be8ac6711d7c1b686ec602d47d))
+* specify zone_id for staging deployment ([1687f8d](https://github.com/nftstorage/nft.storage/commit/1687f8d4fd1cd29f9c9616399fea7553d0048577))
+
+## [4.9.3](https://github.com/nftstorage/nft.storage/compare/api-v4.9.2...api-v4.9.3) (2024-07-01)
+
+
+### Bug Fixes
+
+* expose count header ([f9468d2](https://github.com/nftstorage/nft.storage/commit/f9468d2a57c7d1e0042ed0ce8279c18e39a023af))
+
+## [4.9.2](https://github.com/nftstorage/nft.storage/compare/api-v4.9.1...api-v4.9.2) (2024-07-01)
+
+
+### Bug Fixes
+
+* allow count header ([13c229b](https://github.com/nftstorage/nft.storage/commit/13c229bb960e851074fa8d1da19c4f3ec481cbf6))
+
+## [4.9.1](https://github.com/nftstorage/nft.storage/compare/api-v4.9.0...api-v4.9.1) (2024-07-01)
+
+
+### Bug Fixes
+
+* allow zero count ([09dea5b](https://github.com/nftstorage/nft.storage/commit/09dea5b67d67b49e220c35258ba5d14efbc5ffe5))
+
+## [4.9.0](https://github.com/nftstorage/nft.storage/compare/api-v4.8.1...api-v4.9.0) (2024-07-01)
+
+
+### Features
+
+* **api:** add count to list nfts api ([#2701](https://github.com/nftstorage/nft.storage/issues/2701)) ([6da5098](https://github.com/nftstorage/nft.storage/commit/6da50981999241660b4b9cd58fd66b16d095ebbe))
+
+## [4.8.1](https://github.com/nftstorage/nft.storage/compare/api-v4.8.0...api-v4.8.1) (2024-06-13)
+
+
+### Bug Fixes
+
+* add backup url parts to list ([#2675](https://github.com/nftstorage/nft.storage/issues/2675)) ([c1cd467](https://github.com/nftstorage/nft.storage/commit/c1cd467315b3cdeab7a297ebb1d5023494052f18))
+
+## [4.8.0](https://github.com/nftstorage/nft.storage/compare/api-v4.7.0...api-v4.8.0) (2024-04-17)
+
+
+### Features
+
+* show deal info from w3up ([#2573](https://github.com/nftstorage/nft.storage/issues/2573)) ([766a7c1](https://github.com/nftstorage/nft.storage/commit/766a7c1dbde4e0efec8424048767f3c9e947a2ab))
+
+
+### Bug Fixes
+
+* more logging of upload get fail ([#2593](https://github.com/nftstorage/nft.storage/issues/2593)) ([35cc344](https://github.com/nftstorage/nft.storage/commit/35cc34499125ac24292fdfbb61d67569f279f089))
+* one more typo ([de5582e](https://github.com/nftstorage/nft.storage/commit/de5582eac5cb739bc48294a3a0ff95422d8a20e6))
+
+
+### Other Changes
+
+* more deals get debugging ([#2594](https://github.com/nftstorage/nft.storage/issues/2594)) ([36a26f1](https://github.com/nftstorage/nft.storage/commit/36a26f14d7f9dfa9a204f37af7b4fc5fea1aa537))
+* remove debugging ([#2595](https://github.com/nftstorage/nft.storage/issues/2595)) ([3dc7916](https://github.com/nftstorage/nft.storage/commit/3dc7916eb7833b5a267624e07783c05494be5f2f))
+* remove legacy upload codepath ([#2580](https://github.com/nftstorage/nft.storage/issues/2580)) ([88c05a9](https://github.com/nftstorage/nft.storage/commit/88c05a90289a5c702d477723f0e4812f8e62b7f4))
+
+## [4.7.0](https://github.com/nftstorage/nft.storage/compare/api-v4.6.0...api-v4.7.0) (2024-04-04)
+
+
+### Features
+
+* NFT.storage changes ([#2560](https://github.com/nftstorage/nft.storage/issues/2560)) ([1903214](https://github.com/nftstorage/nft.storage/commit/19032140691806e07cf3b013e2afaeb01d6d8459))
+
+## [4.6.0](https://github.com/nftstorage/nft.storage/compare/api-v4.5.0...api-v4.6.0) (2024-04-04)
+
+
+### Features
+
+* added script to generate ucan for w3up space and docs for how to access the space using console.web3.storage ([#2554](https://github.com/nftstorage/nft.storage/issues/2554)) ([ad33faf](https://github.com/nftstorage/nft.storage/commit/ad33faf83ae1c994f040f6ad1539496b16ad264a))
+* lock w3up uploads feature switch open ([#2556](https://github.com/nftstorage/nft.storage/issues/2556)) ([6eeefeb](https://github.com/nftstorage/nft.storage/commit/6eeefebe8a54f4db9e4826cba4a0847ae8ec2d14))
+
+## [4.5.0](https://github.com/nftstorage/nft.storage/compare/api-v4.4.3...api-v4.5.0) (2024-04-02)
+
+
+### Features
+
+* POST /uploads can write uploads to w3up for web3 serving and dagcargoless filecoin deal-making ([#2522](https://github.com/nftstorage/nft.storage/issues/2522)) ([0c77cb3](https://github.com/nftstorage/nft.storage/commit/0c77cb3646586b1a802e8c8ca2e8c54d0a006f56))
+* uploadCarWithStat avoids copying stat.carBytes via Blob construction ([#2543](https://github.com/nftstorage/nft.storage/issues/2543)) ([bcb67a3](https://github.com/nftstorage/nft.storage/commit/bcb67a3be8a704b586b35099e3e88c1fdb1c0af6))
+
+
+### Bug Fixes
+
+* add a fake piece hasher to try to fix staging upload issues ([#2542](https://github.com/nftstorage/nft.storage/issues/2542)) ([542983c](https://github.com/nftstorage/nft.storage/commit/542983c4c42c8a78602f6025e61a5ec7750206bd))
+* avoid car repack ([#2551](https://github.com/nftstorage/nft.storage/issues/2551)) ([b0d622e](https://github.com/nftstorage/nft.storage/commit/b0d622eb473d57de86b4cc917a006320da33b626))
+* avoid car repack ([#2552](https://github.com/nftstorage/nft.storage/issues/2552)) ([b4ff571](https://github.com/nftstorage/nft.storage/commit/b4ff5719a5031c51cffa80803e946300d4af131c))
+* change to post method ([#2547](https://github.com/nftstorage/nft.storage/issues/2547)) ([65e20fb](https://github.com/nftstorage/nft.storage/commit/65e20fbdaa1dc3e33235b5cc9671bd61e6a4404c))
+* enable `url_standard` compatbility flag ([#2540](https://github.com/nftstorage/nft.storage/issues/2540)) ([bdde10a](https://github.com/nftstorage/nft.storage/commit/bdde10a1aff8e59a371a04b5ac5315e0e072bff8))
+* enable the `url_standard` compatibility flag ([#2537](https://github.com/nftstorage/nft.storage/issues/2537)) ([e822bab](https://github.com/nftstorage/nft.storage/commit/e822bab9dddccd91386032f2eeb274a51dcb02a5))
+* enabled nodejs compat ([#2545](https://github.com/nftstorage/nft.storage/issues/2545)) ([654cde7](https://github.com/nftstorage/nft.storage/commit/654cde7ef93a195a74359d015e0c8030abdeae3f))
+* log out proof ([225cf28](https://github.com/nftstorage/nft.storage/commit/225cf286bf28b497dcfd67bd9e566e26a19d1edb))
+* log proof for debugging ([#2535](https://github.com/nftstorage/nft.storage/issues/2535)) ([0ecace3](https://github.com/nftstorage/nft.storage/commit/0ecace3ed41c7330ccf84691b70cf33e17669d52))
+* more logging ([#2536](https://github.com/nftstorage/nft.storage/issues/2536)) ([11ae646](https://github.com/nftstorage/nft.storage/commit/11ae64679bb505ecd08c46f62598d0318d81f059))
+* remove debugging console.logs and nodejs_compat flag ([#2553](https://github.com/nftstorage/nft.storage/issues/2553)) ([6ceb299](https://github.com/nftstorage/nft.storage/commit/6ceb299627085e9cfac3a5c216d8fd4d3a6c8d33))
+* Revert "fix: try older w3up client" ([#2549](https://github.com/nftstorage/nft.storage/issues/2549)) ([b31847b](https://github.com/nftstorage/nft.storage/commit/b31847babc3c6a37b4bcf4d865117a8e247f826e))
+* revert debugging prs ([#2539](https://github.com/nftstorage/nft.storage/issues/2539)) ([ba22d01](https://github.com/nftstorage/nft.storage/commit/ba22d01d36bf75f8e676b2d5b90bd3ae9383ed07))
+* try older w3up client ([#2548](https://github.com/nftstorage/nft.storage/issues/2548)) ([5d94ec5](https://github.com/nftstorage/nft.storage/commit/5d94ec579a2521391b52d6e989e103379486ba6b))
+* upgrade @ipld/dag-cbor ([#2534](https://github.com/nftstorage/nft.storage/issues/2534)) ([964a12c](https://github.com/nftstorage/nft.storage/commit/964a12cd0239320077a0ae61818f4c78f1775585))
+
+
+### Other Changes
+
+* add a bunch of console.logs ([#2544](https://github.com/nftstorage/nft.storage/issues/2544)) ([2fc34f3](https://github.com/nftstorage/nft.storage/commit/2fc34f38550cbb8a9541e067b2bec17d9f50bedb))
+* expose simple route to debug ([#2546](https://github.com/nftstorage/nft.storage/issues/2546)) ([8a9aef5](https://github.com/nftstorage/nft.storage/commit/8a9aef57776966b2e39b176684f57c09daea7019))
+* simple test case to check limits ([#2550](https://github.com/nftstorage/nft.storage/issues/2550)) ([6a50a70](https://github.com/nftstorage/nft.storage/commit/6a50a70a1e0639f9db8311e75677175ae40f34b4))
+
+## [4.4.3](https://github.com/nftstorage/nft.storage/compare/api-v4.4.2...api-v4.4.3) (2023-10-11)
+
+
+### Bug Fixes
+
+* this param for fetch calls ([#2428](https://github.com/nftstorage/nft.storage/issues/2428)) ([ed04997](https://github.com/nftstorage/nft.storage/commit/ed04997790278a28f927a6517387bc323f914ac2))
+* verify CAR blocks with all supported hashes ([#2460](https://github.com/nftstorage/nft.storage/issues/2460)) ([4526369](https://github.com/nftstorage/nft.storage/commit/45263692713e6173d7cdec1a69df8a284e5e293a))
+
+## [4.4.2](https://github.com/nftstorage/nft.storage/compare/api-v4.4.1...api-v4.4.2) (2023-05-12)
+
+
+### Bug Fixes
+
+* dudewhere root cid should be content cid ([#2392](https://github.com/nftstorage/nft.storage/issues/2392)) ([e1bcf5e](https://github.com/nftstorage/nft.storage/commit/e1bcf5e12c22ff6226732e16a4b926e8d6bb8311))
+
+## [4.4.1](https://github.com/nftstorage/nft.storage/compare/api-v4.4.0...api-v4.4.1) (2023-04-25)
+
+
+### Bug Fixes
+
+* deleted token error message ([#2378](https://github.com/nftstorage/nft.storage/issues/2378)) ([10f6d7b](https://github.com/nftstorage/nft.storage/commit/10f6d7b6aba517a8bd7faa5330af9ae127fa73d5))
+
+## [4.4.0](https://github.com/nftstorage/nft.storage/compare/api-v4.3.0...api-v4.4.0) (2023-03-22)
+
+
+### Features
+
+* send `delegates` on pin add response ([#2351](https://github.com/nftstorage/nft.storage/issues/2351)) ([f4fdbba](https://github.com/nftstorage/nft.storage/commit/f4fdbba9e5c7fd8bac009088132c239c5ea20655))
+
+## [4.3.0](https://github.com/nftstorage/nft.storage/compare/api-v4.2.1...api-v4.3.0) (2023-03-22)
+
+
+### Features
+
+* use 🛻 pickup from api ([#2310](https://github.com/nftstorage/nft.storage/issues/2310)) ([e327bb3](https://github.com/nftstorage/nft.storage/commit/e327bb38247401bee5b7bc3ff4a8cdbbc31e1a69))
+
+## [4.2.1](https://github.com/nftstorage/nft.storage/compare/api-v4.2.0...api-v4.2.1) (2023-02-22)
+
+
+### Bug Fixes
+
+* include R2 key in error message ([#2326](https://github.com/nftstorage/nft.storage/issues/2326)) ([b8d0f98](https://github.com/nftstorage/nft.storage/commit/b8d0f98821f34186cccfdf9c7e9ec7e1c79f6e7a))
+
+## [4.2.0](https://github.com/nftstorage/nft.storage/compare/api-v4.1.0...api-v4.2.0) (2022-10-19)
+
+
+### Features
+
+* write DUDEWHERE link and SATNAV car indexes. ([#2238](https://github.com/nftstorage/nft.storage/issues/2238)) ([1951abb](https://github.com/nftstorage/nft.storage/commit/1951abb68bf4fd87e0a77c89409f789b8dd1b3bc))
+
+
+### Other Changes
+
+* api Logging#setUser expects user.id as string instead of number ([#2233](https://github.com/nftstorage/nft.storage/issues/2233)) ([109462f](https://github.com/nftstorage/nft.storage/commit/109462f6f2e229d9de9808379c82189b14430eb3))
+
+## [4.1.0](https://github.com/nftstorage/nft.storage/compare/api-v4.0.4...api-v4.1.0) (2022-10-17)
+
+
+### Features
+
+* put to r2 and check linkdex-api for dag structure ([#2204](https://github.com/nftstorage/nft.storage/issues/2204)) ([197e11b](https://github.com/nftstorage/nft.storage/commit/197e11b3513ef564ffcefc9db56ede812df47769))
+
+
+### Bug Fixes
+
+* duplicate key name ([#2158](https://github.com/nftstorage/nft.storage/issues/2158)) ([0c6eb47](https://github.com/nftstorage/nft.storage/commit/0c6eb479c6b398fda2ca9b71ec8b151c933a246b))
+* update toucan-js to report error cause ([#2234](https://github.com/nftstorage/nft.storage/issues/2234)) ([34930d6](https://github.com/nftstorage/nft.storage/commit/34930d631de3d8e9b43bb9902ef882bfc7bf7b2f))
+
+
+### Other Changes
+
+* re-enable skipped test & workaround miniflare formdata issue ([#2159](https://github.com/nftstorage/nft.storage/issues/2159)) ([8395569](https://github.com/nftstorage/nft.storage/commit/839556906710d13faa4b5446a9ede776b5091871))
+
 ## [4.0.4](https://github.com/nftstorage/nft.storage/compare/api-v4.0.3...api-v4.0.4) (2022-08-09)
 
 

@@ -26,16 +26,20 @@ const BASE_CONFIG = {
   DATABASE_TOKEN:
     'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTYwMzk2ODgzNCwiZXhwIjoyNTUwNjUzNjM0LCJyb2xlIjoic2VydmljZV9yb2xlIn0.necIJaiP7X2T2QjGeV-FhpkizcNTX8HjDDBAxpgQTEI',
   DATABASE_CONNECTION: 'postgresql://postgres:postgres@localhost:5432/postgres',
-  CLUSTER_BASIC_AUTH_TOKEN: 'dGVzdDp0ZXN0',
-  MAINTENANCE_MODE: 'rw',
+  MAINTENANCE_MODE: 'rwc',
   S3_REGION: 'us-east-1',
   S3_ACCESS_KEY_ID: 'minioadmin',
   S3_SECRET_ACCESS_KEY: 'minioadmin',
   S3_BUCKET_NAME: 'dotstorage-dev-0',
-  CLUSTER_SERVICE: '',
-  CLUSTER_API_URL: 'http://127.0.0.1:9094',
+  PICKUP_URL: 'http://127.0.0.1:9094',
+  PICKUP_BASIC_AUTH_TOKEN: 'dGVzdDp0ZXN0',
   S3_ENDPOINT: 'http://127.0.0.1:9000',
   SLACK_USER_REQUEST_WEBHOOK_URL: '',
+  SATNAV: '?',
+  DUDEWHERE: '?',
+  CARPARK: '?',
+  CARPARK_URL: 'http://example.org',
+  LINKDEX_URL: 'http://example.org',
 
   // Since we're calling serviceConfigFromVariables outside of the test worker scope,
   // we need to define these version constants. In worker scope, they are injected by
@@ -48,7 +52,7 @@ const BASE_CONFIG = {
 /**
  * Returns BASE_CONFIG with the given key omitted
  * @param {string[]} keys
- * @returns {Record<string, string>}
+ * @return {import('../src/config.js').RawEnvConfiguration}
  */
 function omit(...keys) {
   return Object.fromEntries(
@@ -59,6 +63,7 @@ function omit(...keys) {
 /**
  * Returns BASE_CONFIG, overridden with the given vars
  * @param {Record<string, string>} vars
+ * @return {import('../src/config.js').RawEnvConfiguration}
  */
 function override(vars) {
   return { ...BASE_CONFIG, ...vars }
@@ -140,7 +145,7 @@ test.serial(
 test.serial(
   'serviceConfigFromVariables sets MAINTENANCE_MODE if it contains a valid mode string',
   (t) => {
-    const modes = ['--', 'r-', 'rw']
+    const modes = ['---', 'r--', 'rw-', 'rwc']
     for (const m of modes) {
       t.is(
         serviceConfigFromVariables(
@@ -155,14 +160,31 @@ test.serial(
 )
 
 test.serial(
+  'serviceConfigFromVariables sets MAINTENANCE_MODE if it contains a valid legacy mode string',
+  (t) => {
+    const modes = ['--', 'r-', 'rw']
+    for (const m of modes) {
+      t.is(
+        serviceConfigFromVariables(
+          override({
+            MAINTENANCE_MODE: m,
+          })
+        ).MAINTENANCE_MODE.toString(),
+        m + '-'
+      )
+    }
+  }
+)
+
+test.serial(
   'serviceConfigFromVariables uses unaltered values for string config variables',
   (t) => {
     const stringValuedVars = [
       'SALT',
       'METAPLEX_AUTH_TOKEN',
       'PRIVATE_KEY',
-      'CLUSTER_API_URL',
-      'CLUSTER_BASIC_AUTH_TOKEN',
+      'PICKUP_URL',
+      'PICKUP_BASIC_AUTH_TOKEN',
       'DATABASE_URL',
       'DATABASE_TOKEN',
       'S3_ENDPOINT',

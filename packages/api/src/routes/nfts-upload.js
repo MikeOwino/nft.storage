@@ -5,12 +5,13 @@ import * as raw from 'multiformats/codecs/raw'
 import * as cbor from '@ipld/dag-cbor'
 import * as pb from '@ipld/dag-pb'
 import { Block } from 'multiformats/block'
-import { sha256 } from 'multiformats/hashes/sha2'
+import { validateBlock } from '@web3-storage/car-block-validator'
 import { HTTPError, InvalidCarError } from '../errors.js'
-import * as cluster from '../cluster.js'
+import { createCarCid } from '../utils/car.js'
 import { JSONResponse } from '../utils/json-response.js'
 import { checkAuth } from '../utils/auth.js'
 import { toNFTResponse } from '../utils/db-transforms.js'
+import { MissingApiUrlCode } from '../utils/linkdex.js'
 
 const MAX_BLOCK_SIZE = 1 << 21 // Maximum permitted block size in bytes (2MiB).
 const decoders = [pb, raw, cbor]
@@ -30,6 +31,7 @@ export async function nftUpload(event, ctx) {
 
   /** @type {import('../utils/db-client-types').UploadOutput} */
   let upload
+
   if (contentType.includes('multipart/form-data')) {
     const form = await event.request.formData()
     // Our API schema requires that all file parts be named `file` and
@@ -90,7 +92,6 @@ export async function nftUpload(event, ctx) {
       uploadType = 'Blob'
       structure = 'Complete'
     }
-
     upload = await uploadCar({
       event,
       ctx,
@@ -104,7 +105,6 @@ export async function nftUpload(event, ctx) {
       meta: type === 'ucan' ? { ucan } : undefined,
     })
   }
-
   return new JSONResponse({ ok: true, value: toNFTResponse(upload) })
 }
 
@@ -116,7 +116,7 @@ export async function nftUpload(event, ctx) {
  *   key?: Pick<import('../utils/db-client-types').UserOutputKey, 'id'>
  *   car: Blob
  *   uploadType?: import('../utils/db-types').definitions['upload']['type']
- *   mimeType: string
+ *   mimeType?: string
  *   structure: DagStructure
  *   files: Array<{ name: string; type?: string }>
  *   meta?: Record<string, unknown>
@@ -140,43 +140,86 @@ export async function uploadCarWithStat(
   stat
 ) {
   const sourceCid = stat.rootCid.toString()
-  const backupUrl = await ctx.uploader.uploadCar(
-    user.id,
-    sourceCid,
-    car,
-    stat.structure
-  )
+  const contentCid = stat.rootCid.toV1().toString()
 
+  const metadata = {
+    structure: stat.structure || 'Unknown',
+    sourceCid,
+    contentCid,
+    carCid: stat.cid.toString(),
+  }
+
+  /** @type {(() => Promise<void>)|undefined} */
+  let checkDagStructureTask
+  const backupUrls = []
+  const { w3up } = ctx
+  if (w3up) {
+    // we perform store/add and upload/add concurrently to save time.
+    await Promise.all([
+      w3up.capability.store.add(car),
+      // We create an upload for each CAR and use it's CID as a shard, which
+      // will work as expected because `upload/add` merges all shards.
+      // @ts-expect-error Link types mismatch
+      w3up.capability.upload.add(stat.rootCid, [stat.cid]),
+    ])
+
+    // register as gateway links to record the CAR CID - we don't have another
+    // way to know the location right now.
+    backupUrls.push(new URL(`https://w3s.link/ipfs/${stat.cid}`))
+
+    if (stat.structure === 'Partial') {
+      checkDagStructureTask = async () => {
+        const info = await w3up.capability.upload.get(stat.rootCid)
+        if (info.shards && info.shards.length > 1) {
+          const structure = await ctx.linkdexApi.getDagStructureForCars(
+            info.shards
+          )
+          if (structure === 'Complete') {
+            return ctx.db.updatePinStatus(
+              upload.content_cid,
+              elasticPin(structure)
+            )
+          }
+        }
+      }
+    }
+  } else {
+    throw new Error('w3up not defined, cannot upload')
+  }
   const xName = event.request.headers.get('x-name')
   let name = xName && decodeURIComponent(xName)
   if (!name || typeof name !== 'string') {
     name = `Upload at ${new Date().toISOString()}`
   }
+
+  /**
+   * Create a pin entry for elastic ipfs
+   * @param {import('../bindings').DagStructure | undefined} structure
+   * @returns {import('../utils/db-client-types').CreateUploadInputPin}
+   */
+  const elasticPin = (structure) => ({
+    status: structure === 'Complete' ? 'Pinned' : 'Pinning',
+    service: 'ElasticIpfs',
+  })
   const upload = await ctx.db.createUpload({
     mime_type: mimeType,
     type: uploadType,
-    content_cid: stat.rootCid.toV1().toString(),
+    content_cid: contentCid,
     source_cid: sourceCid,
     dag_size: stat.size,
     user_id: user.id,
     files,
     meta,
     key_id: key?.id,
-    backup_urls: [backupUrl],
+    backup_urls: backupUrls,
     name,
+    pins: [elasticPin(stat.structure)],
   })
 
-  event.waitUntil(
-    (async () => {
-      try {
-        await cluster.pin(sourceCid)
-      } catch (err) {
-        console.warn('failed to pin to cluster', err)
-      }
-      await cluster.addCar(car, { local: true })
-    })()
-  )
-
+  // no need to ask linkdex if it's Complete or Unknown
+  if (checkDagStructureTask) {
+    event.waitUntil(checkDagStructureTask())
+  }
   return upload
 }
 
@@ -222,14 +265,19 @@ export async function nftUpdateUpload(event, ctx) {
  * @typedef {Object} CarStat
  * @property {number} [size] DAG size in bytes
  * @property {import('multiformats').CID} rootCid Root CID of the DAG
+ * @property {import('multiformats').CID} cid CID of the CAR
  * @property {DagStructure} [structure] Completeness of the DAG within the CAR
+ *
  * @param {Blob} carBlob
  * @param {Object} [options]
  * @param {DagStructure} [options.structure]
  * @returns {Promise<CarStat>}
  */
 export async function carStat(carBlob, { structure } = {}) {
+  // We load whole thing into memory to derive stats but don't hold a reference
+  // so that it will get GC'd once function returns.
   const carBytes = new Uint8Array(await carBlob.arrayBuffer())
+  const cid = await createCarCid(carBytes)
   const blocksIterator = await CarBlockIterator.fromBytes(carBytes)
   const roots = await blocksIterator.getRoots()
   if (roots.length === 0) {
@@ -247,13 +295,13 @@ export async function carStat(carBlob, { structure } = {}) {
     if (blockSize > MAX_BLOCK_SIZE) {
       throw new Error(`block too big: ${blockSize} > ${MAX_BLOCK_SIZE}`)
     }
-    if (block.cid.multihash.code === sha256.code) {
-      const ourHash = await sha256.digest(block.bytes)
-      if (!equals(ourHash.digest, block.cid.multihash.digest)) {
-        throw new InvalidCarError(
-          `block data does not match CID for ${block.cid.toString()}`
-        )
-      }
+    try {
+      // @ts-expect-error CID type mismatch
+      await validateBlock(block)
+    } catch (/** @type {any} */ err) {
+      throw new InvalidCarError(
+        `failed hash verification: ${block.cid.toString()}: ${err.message}`
+      )
     }
     if (!rawRootBlock && block.cid.equals(rootCid)) {
       rawRootBlock = block
@@ -294,7 +342,7 @@ export async function carStat(carBlob, { structure } = {}) {
       }
     }
   }
-  return { rootCid, size, structure }
+  return { cid, rootCid, size, structure }
 }
 
 /**

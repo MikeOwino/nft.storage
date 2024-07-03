@@ -7,6 +7,7 @@ import {
   ErrorUnauthenticated,
   ErrorTokenBlocked,
   ErrorAgentDIDRequired,
+  NewUserDeniedTryOtherProductError,
 } from '../errors.js'
 import { parseJWT, verifyJWT } from './jwt.js'
 import * as Ucan from 'ucan-storage/ucan-storage'
@@ -52,7 +53,7 @@ export async function validate(event, { log, db, ucanService }, options) {
     }
     const user = await db.getUser(root.audience())
     if (user) {
-      log.setUser({ id: user.id })
+      log.setUser({ id: user.id.toString() })
       return {
         user: filterDeletedKeys(user),
         db,
@@ -78,12 +79,12 @@ export async function validate(event, { log, db, ucanService }, options) {
           if (isBlocked) {
             throw new ErrorTokenBlocked()
           } else {
-            throw new ErrorUserNotFound()
+            throw new ErrorTokenNotFound()
           }
         }
 
         log.setUser({
-          id: user.id,
+          id: user.id.toString(),
         })
         return {
           user: filterDeletedKeys(user),
@@ -105,7 +106,7 @@ export async function validate(event, { log, db, ucanService }, options) {
     const user = await db.getUser(claim.iss)
     if (user) {
       log.setUser({
-        id: user.id,
+        id: user.id.toString(),
       })
 
       return {
@@ -136,6 +137,18 @@ export async function loginOrRegister(event, data, { db }) {
       data.type === 'github'
         ? await parseGithub(data.data, metadata)
         : parseMagic(metadata)
+
+    const dbUser =
+      data.type === 'github'
+        ? await db.getUser(parsed.sub)
+        : await db.getUser(parsed.issuer)
+    if (!dbUser) {
+      const otherProduct = new URL('https://nft.storage/')
+      throw new NewUserDeniedTryOtherProductError(
+        `We're no longer accepting new accounts for NFT.Storage Classic. Learn more about our new experience>> ${otherProduct.toString()}`,
+        otherProduct
+      )
+    }
 
     const upsert = await db.upsertUser({
       email: parsed.email,

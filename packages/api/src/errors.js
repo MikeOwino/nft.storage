@@ -200,6 +200,20 @@ export class ErrorInvalidMetaplexToken extends Error {
 
 ErrorInvalidMetaplexToken.CODE = 'ERROR_INVALID_METAPLEX_TOKEN'
 
+export class LinkdexError extends Error {
+  /**
+   * @param {number} status
+   * @param {string} statusText
+   */
+  constructor(status, statusText) {
+    super(`linkdex-api not ok: ${status} ${statusText}`)
+    this.name = 'LinkdexError'
+    this.status = status
+    this.code = LinkdexError.CODE
+  }
+}
+LinkdexError.CODE = 'LINKDEX_NOT_OK'
+
 export class ErrorPinningUnauthorized extends HTTPError {
   constructor(
     msg = 'Pinning not authorized for this user, visit https://nft.storage/docs/how-to/pinning-service/ for instructions on how to request authorization.'
@@ -270,3 +284,27 @@ export class ErrorAgentDIDRequired extends HTTPError {
   }
 }
 ErrorAgentDIDRequired.CODE = 'ERROR_AGENT_DID_REQUIRED'
+
+/**
+ * Error indicating a new user signup was denied and probably will be indefinitely,
+ * and the user should try a new product instead.
+ */
+export class NewUserDeniedTryOtherProductError extends HTTPError {
+  /**
+   * @param {string} message
+   * @param {URL} otherProduct
+   */
+  constructor(message, otherProduct) {
+    super(message, 403)
+    this.code = 'NEW_USER_DENIED_TRY_OTHER_PRODUCT'
+    this.otherProduct = otherProduct
+  }
+
+  toJSON() {
+    return {
+      message: this.message,
+      code: this.code,
+      otherProduct: this.otherProduct.toString(),
+    }
+  }
+}

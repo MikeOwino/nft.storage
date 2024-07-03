@@ -5,9 +5,16 @@ import Twitter from '../icons/twitter'
 import Github from '../icons/github'
 import PLLogo from '../icons/protocolLabs'
 import countly from '../lib/countly'
+import { usePlausible } from 'next-plausible'
 
 export default function Footer() {
+  const plausible = usePlausible()
   const onLinkClick = useCallback((event) => {
+    plausible(countly.events.LINK_CLICK_FOOTER, {
+      props: {
+        target: event.currentTarget,
+      },
+    })
     countly.trackCustomLinkClick(
       countly.events.LINK_CLICK_FOOTER,
       event.currentTarget
@@ -39,7 +46,7 @@ export default function Footer() {
           <Discord />
         </a>
         <a
-          href="https://twitter.com/nft_storage"
+          href="https://twitter.com/nftdotstorage"
           title="@nft_storage Twitter"
           target="_blank"
           rel="noreferrer"
@@ -95,6 +102,16 @@ export default function Footer() {
             onClick={onLinkClick}
           >
             Stats
+          </Link>
+        </span>
+        <Dot />
+        <span className="block lg:inline-block my-4">
+          <Link
+            href="/privacy"
+            className="nspink no-underline underline-hover align-middle"
+            onClick={onLinkClick}
+          >
+            Privacy
           </Link>
         </span>
         <Dot />

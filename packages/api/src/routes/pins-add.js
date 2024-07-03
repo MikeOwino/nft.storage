@@ -46,11 +46,19 @@ export async function pinsAdd(event, ctx) {
     )
   }
 
-  await cluster.pin(cid.sourceCid, {
+  const pinRes = await cluster.pin(cid.sourceCid, {
     origins: pinData.origins,
   })
 
+  const delegates = pinRes?.metadata?.delegates
+
   const upload = await db.createUpload({
+    pins: [
+      {
+        status: 'PinQueued',
+        service: 'ElasticIpfs', // via pickup
+      },
+    ],
     type: 'Remote',
     content_cid: cid.contentCid,
     source_cid: cid.sourceCid,
@@ -61,5 +69,6 @@ export async function pinsAdd(event, ctx) {
     name: pinData.name,
   })
 
-  return new JSONResponse(toPinsResponse(upload))
+  // @ts-expect-error cluster client types expect Record<string, string> but delegates is string[]
+  return new JSONResponse(toPinsResponse(upload, delegates))
 }

@@ -33,10 +33,19 @@ export async function nftList(event, ctx) {
     throw new HTTPError('invalid params', 400)
   }
 
-  const nfts = await db.listUploads(user.id, options)
+  const data = await db.listUploads(user.id, options)
 
-  return new JSONResponse({
-    ok: true,
-    value: nfts?.map((n) => toNFTResponse(n)),
-  })
+  return new JSONResponse(
+    {
+      ok: true,
+      value: data.uploads?.map((n) => toNFTResponse(n)),
+    },
+    data.count != null
+      ? {
+        headers: {
+          'Access-Control-Expose-Headers': 'Count',
+          Count: data.count.toString()
+        }
+      } : {}
+  )
 }

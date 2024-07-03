@@ -20,6 +20,7 @@ if (globalThis.window) {
       MAGIC_TOKEN = 'pk_live_9363234DECD6F093'
       break
     case 'nft.storage':
+    case 'classic-app.nft.storage':
       API = 'https://api.nft.storage'
       MAGIC_TOKEN = 'pk_live_20429A8C4CDEDCF7'
       break
@@ -31,7 +32,6 @@ if (globalThis.window) {
 const AUTHENTICATED_ROUTES = {
   MANAGE: 'manage',
   FILES: 'files',
-  NEW_FILE: 'new-file',
   NEW_KEY: 'new-key',
   PINNING_REQUEST: 'pinning-request',
 }

@@ -1,5 +1,54 @@
 # Changelog
 
+## [7.2.0](https://github.com/nftstorage/nft.storage/compare/nft.storage-v7.1.1...nft.storage-v7.2.0) (2024-07-01)
+
+
+### Features
+
+* POST /uploads can write uploads to w3up for web3 serving and dagcargoless filecoin deal-making ([#2522](https://github.com/nftstorage/nft.storage/issues/2522)) ([0c77cb3](https://github.com/nftstorage/nft.storage/commit/0c77cb3646586b1a802e8c8ca2e8c54d0a006f56))
+* **website:** update website to remove upload functionality ([#2704](https://github.com/nftstorage/nft.storage/issues/2704)) ([060dfd5](https://github.com/nftstorage/nft.storage/commit/060dfd54df7d6d8fadf856b1d90a92c1b731450d))
+
+## [7.1.1](https://github.com/nftstorage/nft.storage/compare/nft.storage-v7.1.0...nft.storage-v7.1.1) (2023-07-20)
+
+
+### Bug Fixes
+
+* this param for fetch calls ([#2428](https://github.com/nftstorage/nft.storage/issues/2428)) ([ed04997](https://github.com/nftstorage/nft.storage/commit/ed04997790278a28f927a6517387bc323f914ac2))
+
+## [7.1.0](https://github.com/nftstorage/nft.storage/compare/nft.storage-v7.0.3...nft.storage-v7.1.0) (2023-05-23)
+
+
+### Features
+
+* custom chunk size ([#2396](https://github.com/nftstorage/nft.storage/issues/2396)) ([4e37f8e](https://github.com/nftstorage/nft.storage/commit/4e37f8e60e0e7b60657d205806693216db634947))
+
+
+### Bug Fixes
+
+* increase timeout for custom chunk size test ([77f9054](https://github.com/nftstorage/nft.storage/commit/77f905480cbdaacc77b2c703c81911ad0fe734c0))
+
+## [7.0.3](https://github.com/nftstorage/nft.storage/compare/nft.storage-v7.0.2...nft.storage-v7.0.3) (2023-02-28)
+
+
+### Bug Fixes
+
+* trigger ci ([b504852](https://github.com/nftstorage/nft.storage/commit/b504852e8634160ebda7ea81fb775fb2433a0b58))
+
+## [7.0.2](https://github.com/nftstorage/nft.storage/compare/nft.storage-v7.0.1...nft.storage-v7.0.2) (2023-02-28)
+
+
+### Bug Fixes
+
+* trigger ci ([6645689](https://github.com/nftstorage/nft.storage/commit/6645689995b18ee31a3f7573a3b22249e28d33a3))
+
+## [7.0.1](https://github.com/nftstorage/nft.storage/compare/nft.storage-v7.0.0...nft.storage-v7.0.1) (2023-02-28)
+
+
+### Bug Fixes
+
+* fix typescript nodenext resolution ([#2185](https://github.com/nftstorage/nft.storage/issues/2185)) ([69a49ce](https://github.com/nftstorage/nft.storage/commit/69a49cede3f24d723582b239596eb714b178a99d))
+* set client default chunk size to 50MB ([#2331](https://github.com/nftstorage/nft.storage/issues/2331)) ([631f307](https://github.com/nftstorage/nft.storage/commit/631f307950782c01356dbf1ad574d7b1d8301eab))
+
 ## [7.0.0](https://github.com/nftstorage/nft.storage/compare/nft.storage-v6.4.1...nft.storage-v7.0.0) (2022-07-29)
 
 
